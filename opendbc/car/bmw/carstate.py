@@ -30,9 +30,20 @@ class CarState(CarStateBase):
     # ACC RX is currently synthetic; ignore checks until real CRC/counter implemented
     cp_sas.dbc.name_to_msg["ACC"].ignore_checksum = True
     cp_sas.dbc.name_to_msg["ACC"].ignore_counter = True
+
+    kcan_messages = [
+      ("TurnSignals", float("nan")),
+      ("Long", float("nan")),
+      ("Acceleration", float("nan")),
+      ("Brake", float("nan")),
+    ]
+
+    cp_kcan = CANParser("bmw_sp2018",kcan_messages, bus=0)
+
     return {
       Bus.main: cp_main,
       Bus.adas: cp_sas,
+      Bus.chassis: cp_kcan,
     }
 
   def _demux_last(self, cp: CANParser, msg: str, cc_sig: str, val_sig: str, cycle_base: int) -> tuple[bool, float]:
@@ -52,11 +63,21 @@ class CarState(CarStateBase):
     # Previous state snapshot (avoids extra allocations and getattr fallback)
     prev = self.out
 
+    # Previous state snapshot (avoids extra allocations and getattr fallback)
+    prev = self.out
+
     # fl = cp.vl["wheel_speed"].get("FL", 0.0)
     # fr = cp.vl["wheel_speed"].get("FR", 0.0)
     # rl = cp.vl["wheel_speed"].get("RL", 0.0)
     # rr = cp.vl["wheel_speed"].get("RR", 0.0)
     # self.parse_wheel_speeds(ret, fl, fr, rl, rr, CV.KPH_TO_MS)
+
+    # "gas" pedal
+    ret.gasPressed = cp_kcan.vl["Acceleration"]["acccelerator"] > 0
+
+    # Brake pedal
+    ret.brake = 0
+    ret.brakePressed = cp_kcan.vl["Brake"]["brake_pedal"] > 0
 
     # Batch demux using helper; BMW DBC uses fixed cycle codes
     veh_found, veh_speed_kph = self._demux_last(cp, "vehicle_speed", "cycle_count", "veh_speed", cycle_base=3)
@@ -104,7 +125,12 @@ class CarState(CarStateBase):
       ret.gearShifter = prev.gearShifter
     # ACC assist_mode demux with cycle base 1
     acc_found, acc_assist_mode = self._demux_last(cp_sas, "ACC", "cycle_count", "assist_mode", cycle_base=1)
-    ret.cruiseState.enabled = bool(int(acc_assist_mode)) if acc_found else bool(prev.cruiseState.enabled)
+    # ret.cruiseState.enabled = bool(int(acc_assist_mode)) if acc_found else bool(prev.cruiseState.enabled)
+
+    long_active = cp_kcan.vl["Long"]["long_desired"] == 1
+
+    ret.cruiseState.enabled = acc_found and acc_assist_mode and long_active
+
     ret.cruiseState.available = True
 
     # Yaw rate (deg/s -> rad/s), demux cycle base 0
@@ -120,6 +146,10 @@ class CarState(CarStateBase):
       ret.steeringTorque = float(steering_torque)
     else:
       ret.steeringTorque = float(prev.steeringTorque)
+
+    # Blinkers
+    ret.leftBlinker = cp_kcan.vl["TurnSignals"]["LeftTurn"] != 1
+    ret.rightBlinker = cp_kcan.vl["TurnSignals"]["RightTurn"] != 1
 
     return ret, ret_sp
 

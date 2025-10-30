@@ -6,9 +6,9 @@ from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
 
 @dataclass(frozen=True, kw_only=True)
 class BMWCarSpecs(CarSpecs):
-  mass: float = 2000.
-  wheelbase: float = 3.105
-  steerRatio: float = 16.3
+  mass: float = 2150.
+  wheelbase: float = 2.865
+  steerRatio: float = 14.1
   centerToFrontRatio: float = 0.5
 
 
