@@ -1,0 +1,110 @@
+NS_ :
+
+BS_:
+
+BU_:
+
+BO_ 144 NEW_MSG_90: 8 XXX
+
+BO_ 165 NEW_MSG_A5: 8 XXX
+ SG_ NEW_SIGNAL_1 : 16|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_2 : 60|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 173 NEW_MSG_AD: 8 XXX
+ SG_ NEW_SIGNAL_1 : 24|12@1+ (1,0) [0|65535] "" XXX
+
+BO_ 216 NEW_MSG_D8: 9 XXX
+
+BO_ 217 Acceleration: 8 XXX
+ SG_ acccelerator : 16|12@1+ (0.000244,0) [0|2047] "" XXX
+ SG_ acceleration : 32|12@1+ (0.000244,0) [0|8191] "" XXX
+ SG_ NEW_SIGNAL_1 : 44|12@1+ (1,0) [0|15] "" XXX
+
+BO_ 218 NEW_MSG_DA: 8 XXX
+ SG_ NEW_SIGNAL_1 : 16|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_2 : 32|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_4 : 47|4@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_3 : 48|12@1+ (1,0) [0|4095] "" XXX
+
+BO_ 219 Long: 8 XXX
+ SG_ NEW_SIGNAL_1 : 32|12@1+ (1,0) [0|65535] "" XXX
+ SG_ NEW_SIGNAL_2 : 47|4@0+ (1,0) [0|15] "" XXX
+ SG_ long_desired : 56|1@0+ (-1,1) [0|1] "" XXX
+
+BO_ 220 NEW_MSG_DC: 6 XXX
+ SG_ NEW_SIGNAL_2 : 12|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_1 : 35|4@0+ (1,0) [0|15] "" XXX
+
+BO_ 239 Brake: 8 XXX
+ SG_ brake_pedal : 40|12@1+ (-1,3328) [0|3328] "" XXX
+
+BO_ 341 NEW_MSG_155: 8 XXX
+ SG_ NEW_SIGNAL_2 : 16|16@1+ (1,0) [0|65535] "" XXX
+ SG_ NEW_SIGNAL_1 : 32|16@1+ (1,0) [0|65535] "" XXX
+
+BO_ 355 NEW_MSG_163: 8 XXX
+ SG_ NEW_SIGNAL_3 : 16|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_2 : 32|12@1+ (1,0) [0|8191] "" XXX
+ SG_ NEW_SIGNAL_1 : 48|12@1+ (1,0) [0|4095] "" XXX
+
+BO_ 371 NEW_MSG_173: 8 XXX
+ SG_ maybe_brake_hold : 63|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 469 NEW_MSG_1D5: 8 XXX
+ SG_ NEW_SIGNAL_2 : 16|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_3 : 32|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_1 : 53|2@0+ (1,0) [0|3] "" XXX
+
+BO_ 470 SteeringWheel: 3 XXX
+
+BO_ 502 TurnSignals: 8 2
+ SG_ HoldActivated : 0|1@1+ (1,0) [0|1] "" XXX
+ SG_ LeftTurn : 4|1@1+ (1,0) [0|1] "" XXX
+ SG_ RightTurn : 5|1@0+ (1,0) [0|1] "" XXX
+ SG_ TurnSignalActive : 8|1@0+ (1,0) [0|1] "" XXX
+ SG_ TurnSignalIdle : 9|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 614 NEW_MSG_266: 8 XXX
+ SG_ NEW_SIGNAL_1 : 35|2@0+ (1,0) [0|3] "" XXX
+
+BO_ 705 gear: 8 XXX
+ SG_ gear : 40|4@1+ (1,0) [0|15] "" XXX
+
+BO_ 736 NEW_MSG_2E0: 6 XXX
+ SG_ NEW_SIGNAL_1 : 32|6@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 39|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 769 NEW_MSG_301: 7 XXX
+ SG_ NEW_SIGNAL_1 : 31|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 820 NEW_MSG_334: 8 XXX
+ SG_ NEW_SIGNAL_1 : 0|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_2 : 62|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 855 maybe_radar: 5 XXX
+ SG_ long_active : 0|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_1 : 7|4@0+ (1,0) [0|15] "" XXX
+ SG_ maybe_distance : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ maybe_following_speed : 23|8@0+ (1,0) [0|255] "kph" XXX
+ SG_ maybe_azimuth : 24|6@1+ (1,-8) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 : 35|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 : 37|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 902 NEW_MSG_386: 8 XXX
+ SG_ maybe_long_active : 0|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_2 : 31|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_5 : 43|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 : 45|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 1017 NEW_MSG_3F9: 8 XXX
+ SG_ NEW_SIGNAL_1 : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ maybe_gear : 50|3@0+ (1,0) [0|7] "" XXX
+
+BO_ 1026 NEW_MSG_402: 2 XXX
+
+BO_ 1085 NEW_MSG_43D: 8 XXX
+
+CM_ SG_ 219 long_desired "If the user requests longitudinal control. False if disabled by steering wheel or accelerator pressed";
+CM_ BO_ 470 "Maybe, carried over from E series";
+CM_ SG_ 855 long_active "1 is active, even with accelerator pressed";
