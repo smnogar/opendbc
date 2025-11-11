@@ -26,21 +26,17 @@ class CarInterface(CarInterfaceBase):
 
     ret.steerActuatorDelay = 0.1
     ret.steerLimitTimer = 0.4
-    ret.steerAtStandstill = True
+
+    # system is capable of steering at standstill, but disabled due to
+    # unnecessary movements close to and at standstill
+    ret.steerAtStandstill = False
+    
     ret.radarUnavailable = True
 
-    # Basic PID for angle; tune later
-    # Reduce aggressive turn-in and high-speed oscillation
-    # Gains taper with speed; slightly higher actuator delay for angle path
-    ret.lateralTuning.pid.kf = 0.00005
-    ret.lateralTuning.pid.kpBP = [0., 10., 20., 35.]
-    ret.lateralTuning.pid.kpV  = [0.45, 0.40, 0.35, 0.30]
-    ret.lateralTuning.pid.kiBP = [0., 10., 20., 35.]
-    ret.lateralTuning.pid.kiV  = [0.12, 0.10, 0.08, 0.06]
     return ret
 
   @staticmethod
   def _get_params_sp(stock_cp: structs.CarParams, ret: structs.CarParamsSP, candidate, fingerprint: dict[int, dict[int, int]],
-                     car_fw: list[structs.CarParams.CarFw], alpha_long: bool, is_release_sp: bool, docs: bool) -> structs.CarParamsSP:
+                     car_fw: list[structs.CarParams.CarFw], alpha_long: bool, docs: bool) -> structs.CarParamsSP:
     # Ensure BMW returns a valid CarParamsSP (even if no brand-specific tweaks yet)
     return ret

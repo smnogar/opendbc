@@ -128,11 +128,19 @@
     ],
     "package": "Adaptive Cruise Control (ACC) & Lane Assist"
   },
-  "BMW SP2018": {
-    "platform": "BMW_SP2018",
+  "BMW 5 Series (G30)": {
+    "platform": "BMW_G30",
     "make": "BMW",
     "brand": "bmw",
-    "model": "SP2018",
+    "model": "5 Series (G30)",
+    "year": [],
+    "package": "5AU"
+  },
+  "BMW i4 (G26)": {
+    "platform": "BMW_G26_I4",
+    "make": "BMW",
+    "brand": "bmw",
+    "model": "i4 (G26)",
     "year": [],
     "package": "5AU"
   },
