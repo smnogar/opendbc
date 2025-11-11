@@ -100,4 +100,5 @@ legend = ["LAT_ACCEL_FACTOR", "MAX_LAT_ACCEL_MEASURED", "FRICTION"]
 "HONDA_CIVIC_2022" = [2.5, 1.2, 0.15]
 "HONDA_HRV_3G" = [2.5, 1.2, 0.2]
 
-"BMW_SP2018" = [nan, 1.5, nan]
+"BMW_G26_I4" = [nan, 1.5, nan]
+"BMW_G30" = [nan, 1.5, nan]
