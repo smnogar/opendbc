@@ -60,11 +60,7 @@ class CarController(CarControllerBase):
         "assist_mode": 0,   # it is set to 1 when stock LKAS active, 0 otherwise
         "wayback_en1_lane_keeping_trigger": 0,
         "lane_keeping_triggered": 1,
-
-        # full torque is 0xA0/160, but setting it lower like 0x50/60 seems to
-        # dampen the response a bit
-        "like_assist_torque_reserve": 0x50 if lat_active else 0x00,
-
+        "like_assist_torque_reserve": 0xA0 if lat_active else 0x00,
         "constants": 0x03ff17fe,
         "wayback_en_2": 0,
         "steering_engaged": 2 if lat_active else 0,
