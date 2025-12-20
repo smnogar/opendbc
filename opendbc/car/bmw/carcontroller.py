@@ -1,3 +1,5 @@
+import numpy as np
+
 from opendbc.can import CANPacker
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car import Bus
@@ -16,6 +18,7 @@ class CarController(CarControllerBase):
     self.apply_angle_last = 0.0
     # Vehicle model for angle limiting (use BMW CP)
     self.VM = VehicleModel(CP)
+    self.params = CarControllerParams()
 
   def _acc_cnt(self):
     self.cnt = (self.cnt + 1) % 16
@@ -41,12 +44,21 @@ class CarController(CarControllerBase):
     lat_active = bool(CC.latActive)
     desired_angle = float(actuators.steeringAngleDeg)
 
+    # scale steering angle based on speed. This is a hack to accommodate variable steer ratio
+    angle_ratio = np.interp(CS.out.vEgo, self.params.ANGLE_RATIO_BP, self.params.ANGLE_RATIO_V)
+    desired_angle = angle_ratio * actuators.steeringAngleDeg
+
     # Vehicle model-based angle limiting (jerk/accel and EPS constraints)
     desired_angle = apply_steer_angle_limits_vm(desired_angle, self.apply_angle_last, CS.out.vEgoRaw, CS.out.steeringAngleDeg,
                                                 lat_active, CarControllerParams, self.VM)
     self.apply_angle_last = desired_angle
 
     if self.frame % 2 == 0:
+
+      # weaken force mimics BMW stock behavior. I think this is about making
+      # it easier for the driver to contribute to steering
+      force_weaken_red = np.interp(CS.out.vEgo, self.params.WEAKEN_FORCE_BP, self.params.WEAKEN_FORCE_V)
+
       # Full ACC payload with defaults
       # assumes stock LKAS is off
       values = {
@@ -65,7 +77,7 @@ class CarController(CarControllerBase):
         "wayback_en_2": 0,
         "steering_engaged": 2 if lat_active else 0,
         "maybe_assist_force_enhance": 0xA2,
-        "maybe_assist_force_weaken": 0xFA,
+        "maybe_assist_force_weaken": force_weaken_red,
       }
 
       # simple check on pico, will change later.
