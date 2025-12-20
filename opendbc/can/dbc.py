@@ -48,7 +48,10 @@ class Signal:
   offset: float
   is_little_endian: bool
   type: int = SignalType.DEFAULT
-  calc_checksum: 'Callable[[int, Signal, bytearray], int] | None' = None
+  calc_checksum: 'Callable[[int, "Signal", bytearray], int] | None' = None
+  # --- NEW: multiplexing metadata ---
+  is_mux: bool = False          # True for the M signal (e.g. cycle_count)
+  mux_val: int | None = None    # 0,1,2,... for m0,m1,m2...; None for non-muxed signals
 
 
 @dataclass
@@ -113,11 +116,16 @@ class DBC:
       elif line.startswith("SG_ "):
         m = SG_RE.search(line)
         offset = 0
+        mux_token: str | None = None
+
         if not m:
+          # Multiplexed form: SG_ <name> <M|m0|m1> : ...
           m = SGM_RE.search(line)
           if not m:
             continue
           offset = 1
+          mux_token = m.group(2)  # "M" or "m0", "m1", ...
+
         sig_name = m.group(1)
         start_bit = int(m.group(2 + offset))
         size = int(m.group(3 + offset))
@@ -134,7 +142,22 @@ class DBC:
           lsb = be_bits[idx + size - 1]
           msb = start_bit
 
+        # Base signal
         sig = Signal(sig_name, start_bit, msb, lsb, size, is_signed, factor, offset_val, is_little_endian)
+
+        # --- NEW: set mux flags for BMW FlexRay muxing ---
+        if mux_token is not None:
+          if mux_token == "M":
+            # This is the multiplexer signal (e.g. cycle_count)
+            sig.is_mux = True
+            sig.mux_val = None
+          elif mux_token.startswith("m"):
+            # This signal is valid only when the mux (cycle_count) == this value
+            try:
+              sig.mux_val = int(mux_token[1:])
+            except ValueError:
+              sig.mux_val = None  # defensive; won't gate if malformed
+
         set_signal_type(sig, checksum_state, self.name, line_num)
         signals_temp[address][sig_name] = sig
       elif line.startswith("VAL_ "):

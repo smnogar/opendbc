@@ -51,51 +51,86 @@ class MessageState:
       self.last_warning_log_nanos = last_update_nanos
 
   def parse(self, nanos: int, dat: bytes) -> bool:
+    # tmp_vals holds the *new* values we want to write this frame
     tmp_vals: list[float] = [0.0] * len(self.signals)
+    updated: list[bool] = [False] * len(self.signals)  # track which signals actually update
+
     checksum_failed = False
     counter_failed = False
 
     if self.first_seen_nanos == 0:
       self.first_seen_nanos = nanos
 
+    # --- First pass: get raw values and find multiplexer value (e.g. cycle_count) ---
+    raw_vals: list[int] = [0] * len(self.signals)
+    mux_val: int | None = None
+
     for i, sig in enumerate(self.signals):
       tmp = get_raw_value(dat, sig)
       if sig.is_signed:
         tmp -= ((tmp >> (sig.size - 1)) & 0x1) * (1 << sig.size)
 
+      raw_vals[i] = tmp
+
+      # If this signal is the multiplexer (e.g. cycle_count M)
+      if getattr(sig, "is_mux", False):
+        # For BMW cycle_count, the raw value already matches m0/m1/m2...
+        mux_val = tmp
+
+    # --- Second pass: apply checksum/counter, mux gating, and scaling ---
+    for i, sig in enumerate(self.signals):
+      tmp = raw_vals[i]
+
+      # If we have a mux signal in this message, only update signals whose mux_val matches
+      sig_mux_val = getattr(sig, "mux_val", None)
+      if mux_val is not None and sig_mux_val is not None and sig_mux_val != mux_val:
+        # This signal is for a different mux slot (e.g. m1 while cycle_count == 0),
+        # so we skip updating it and keep the previous value.
+        continue
+
+      # Checksum
       if not self.ignore_checksum and sig.calc_checksum is not None:
         expected_checksum = sig.calc_checksum(self.address, sig, bytearray(dat))
         if tmp != expected_checksum:
           checksum_failed = True
           self.rate_limited_log(nanos, f"checksum failed: received {hex(tmp)}, calculated {hex(expected_checksum)}")
 
+      # Counter
       if not self.ignore_counter and sig.type == 1:  # COUNTER
         if not self.update_counter(tmp, sig.size):
           counter_failed = True
 
+      # Scale and store
       tmp_vals[i] = tmp * sig.factor + sig.offset
+      updated[i] = True
 
-    # must have good counter and checksum to update data
+    # Must have good counter and checksum to update data
     if checksum_failed or counter_failed:
       return False
 
+    # Initialize storage on first valid parse
     if not self.vals:
       self.vals = [0.0] * len(self.signals)
       self.all_vals = [[] for _ in self.signals]
 
+    # Only overwrite_vals and append to all_vals if this signal actually updated
     for i, v in enumerate(tmp_vals):
+      if not updated[i]:
+        # For muxed signals whose slot isn't active this frame, we keep last value
+        continue
       self.vals[i] = v
       self.all_vals[i].append(v)
 
     self.timestamps.append(nanos)
 
+    # Estimate message frequency (unchanged logic)
     if self.frequency < 1e-5 and len(self.timestamps) >= 3:
       dt = (self.timestamps[-1] - self.timestamps[0]) * 1e-9
       if (dt > 1.0 or len(self.timestamps) >= self.timestamps.maxlen) and dt != 0:
         self.frequency = min(len(self.timestamps) / dt, 100.0)
         self.timeout_threshold = (1_000_000_000 / self.frequency) * 10
-    return True
 
+    return True
   def update_counter(self, cur_count: int, cnt_size: int) -> bool:
     if ((self.counter + 1) & ((1 << cnt_size) - 1)) != cur_count:
       self.counter_fail = min(self.counter_fail + 1, MAX_BAD_COUNTER)
