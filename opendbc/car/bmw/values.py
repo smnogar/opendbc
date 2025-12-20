@@ -69,3 +69,11 @@ class CarControllerParams:
   # Angle command is sent every other frame (~50 Hz when DT_CTRL=100 Hz)
   STEER_STEP = 2
 
+  # reduce steering torque on highway for easier driver intervention. Not sure
+  # how much of a difference this actually makes.
+  WEAKEN_FORCE_BP = [22., 31.]
+  WEAKEN_FORCE_V  = [210, 250]
+
+  # hack: reduce commanded steering angle to better handle variable steering ratio
+  ANGLE_RATIO_BP = [0., 17., 31.]
+  ANGLE_RATIO_V  = [0.85, 0.85, 0.85]
