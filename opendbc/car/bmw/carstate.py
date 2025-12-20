@@ -71,7 +71,7 @@ class CarState(CarStateBase):
     # self.parse_wheel_speeds(ret, fl, fr, rl, rr, CV.KPH_TO_MS)
 
     # "gas" pedal
-    ret.gasPressed = cp_kcan.vl["Acceleration"]["acccelerator"] > 0
+    ret.gasPressed = cp_kcan.vl["Acceleration"]["accelerator"] > 0
 
     # Brake pedal
     ret.brake = 0

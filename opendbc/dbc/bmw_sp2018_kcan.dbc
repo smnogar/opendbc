@@ -5,6 +5,8 @@ BS_:
 BU_:
 
 BO_ 144 NEW_MSG_90: 8 XXX
+ SG_ NEW_SIGNAL_1 : 40|12@1+ (1,0) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_2 : 55|16@0+ (1,0) [0|65535] "" XXX
 
 BO_ 165 NEW_MSG_A5: 8 XXX
  SG_ NEW_SIGNAL_1 : 16|12@1+ (1,0) [0|4095] "" XXX
@@ -16,7 +18,7 @@ BO_ 173 NEW_MSG_AD: 8 XXX
 BO_ 216 NEW_MSG_D8: 9 XXX
 
 BO_ 217 Acceleration: 8 XXX
- SG_ acccelerator : 16|12@1+ (0.000244,0) [0|2047] "" XXX
+ SG_ accelerator : 16|12@1+ (0.000244,0) [0|2047] "" XXX
  SG_ acceleration : 32|12@1+ (0.000244,0) [0|8191] "" XXX
  SG_ NEW_SIGNAL_1 : 44|12@1+ (1,0) [0|15] "" XXX
 
@@ -50,12 +52,13 @@ BO_ 355 NEW_MSG_163: 8 XXX
 BO_ 371 NEW_MSG_173: 8 XXX
  SG_ maybe_brake_hold : 63|1@0+ (1,0) [0|1] "" XXX
 
+BO_ 415 maybe_lateral: 6 XXX
+ SG_ maybe_lat_acceleration : 16|16@1+ (0.03,-983) [0|65535] "" XXX
+
 BO_ 469 NEW_MSG_1D5: 8 XXX
  SG_ NEW_SIGNAL_2 : 16|12@1+ (1,0) [0|4095] "" XXX
  SG_ NEW_SIGNAL_3 : 32|12@1+ (1,0) [0|4095] "" XXX
  SG_ NEW_SIGNAL_1 : 53|2@0+ (1,0) [0|3] "" XXX
-
-BO_ 470 SteeringWheel: 3 XXX
 
 BO_ 502 TurnSignals: 8 2
  SG_ HoldActivated : 0|1@1+ (1,0) [0|1] "" XXX
@@ -76,6 +79,9 @@ BO_ 736 NEW_MSG_2E0: 6 XXX
 
 BO_ 769 NEW_MSG_301: 7 XXX
  SG_ NEW_SIGNAL_1 : 31|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 770 steering_wheel: 7 XXX
+ SG_ steering_wheel_angle_deg : 16|16@1+ (0.042,-1376.256) [0|65535] "" XXX
 
 BO_ 820 NEW_MSG_334: 8 XXX
  SG_ NEW_SIGNAL_1 : 0|12@1+ (1,0) [0|4095] "" XXX
@@ -106,5 +112,4 @@ BO_ 1026 NEW_MSG_402: 2 XXX
 BO_ 1085 NEW_MSG_43D: 8 XXX
 
 CM_ SG_ 219 long_desired "If the user requests longitudinal control. False if disabled by steering wheel or accelerator pressed";
-CM_ BO_ 470 "Maybe, carried over from E series";
 CM_ SG_ 855 long_active "1 is active, even with accelerator pressed";
