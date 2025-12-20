@@ -44,10 +44,6 @@ class CarController(CarControllerBase):
     lat_active = bool(CC.latActive)
     desired_angle = float(actuators.steeringAngleDeg)
 
-    # scale steering angle based on speed. This is a hack to accommodate variable steer ratio
-    angle_ratio = np.interp(CS.out.vEgo, self.params.ANGLE_RATIO_BP, self.params.ANGLE_RATIO_V)
-    desired_angle = angle_ratio * actuators.steeringAngleDeg
-
     # Vehicle model-based angle limiting (jerk/accel and EPS constraints)
     desired_angle = apply_steer_angle_limits_vm(desired_angle, self.apply_angle_last, CS.out.vEgoRaw, CS.out.steeringAngleDeg,
                                                 lat_active, CarControllerParams, self.VM)

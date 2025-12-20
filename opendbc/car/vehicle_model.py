@@ -38,11 +38,40 @@ class VehicleModel:
     self.cR_orig: float = CP.tireStiffnessRear
     self.update_params(1.0, CP.steerRatio)
 
+    # scale the steering ratio based on steering angle. Assume steering ratio
+    # is lower at higher angles for BMW sport steering
+
+    # steering wheel angle
+    self.STEER_RATIO_LUT_ANGLE_DEG = np.array([
+      0., 1., 5., 10.,
+    ])
+    self.STEER_RATIO_LUT_ANGLE_RAD = self.STEER_RATIO_LUT_ANGLE_DEG * np.pi / 180.0
+
+    self.STEER_RATIO_SCALE = np.array([
+      1., 0.95, 0.85, 0.8,
+    ])
+
+
   def update_params(self, stiffness_factor: float, steer_ratio: float) -> None:
     """Update the vehicle model with a new stiffness factor and steer ratio"""
     self.cF: float = stiffness_factor * self.cF_orig
     self.cR: float = stiffness_factor * self.cR_orig
     self.sR: float = steer_ratio
+
+
+  def steer_ratio(self, sa: float) -> float:
+
+    # Args:
+    #   sa: Steering wheel angle [rad]
+    # Returns:
+    #   steer ratio
+
+    scale = float(np.interp(
+      abs(sa),
+      self.STEER_RATIO_LUT_ANGLE_RAD,
+      self.STEER_RATIO_SCALE
+    ))
+    return scale * self.sR
 
   def steady_state_sol(self, sa: float, u: float, roll: float) -> np.ndarray:
     """Returns the steady state solution.
@@ -74,7 +103,7 @@ class VehicleModel:
     Returns:
       Curvature factor [1/m]
     """
-    return (self.curvature_factor(u) * sa / self.sR) + self.roll_compensation(roll, u)
+    return (self.curvature_factor(u) * sa / self.steer_ratio(sa)) + self.roll_compensation(roll, u)
 
   def curvature_factor(self, u: float) -> float:
     """Returns the curvature factor.
@@ -101,7 +130,17 @@ class VehicleModel:
       Steering wheel angle [rad]
     """
 
-    return (curv - self.roll_compensation(roll, u)) * self.sR * 1.0 / self.curvature_factor(u)
+    # return (curv - self.roll_compensation(roll, u)) * self.sR * 1.0 / self.curvature_factor(u)
+
+    # iterate to solve for steering angle
+    target = curv - self.roll_compensation(roll, u)
+    k = self.curvature_factor(u)
+    sa = target * self.sR / max(k, 1e-3)
+
+    for _ in range(5):
+      sa = target * self.steer_ratio(sa) / max(k, 1e-3)
+
+    return sa
 
   def roll_compensation(self, roll: float, u: float) -> float:
     """Calculates the roll-compensation to curvature
