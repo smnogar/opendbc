@@ -48,6 +48,8 @@ class CAR(Platforms):
 
 DBC = CAR.create_dbc_map()
 
+# when to register steering torque as steering pressed
+STEER_THRESHOLD = 1.0
 
 # Lateral limits and controller parameters for BMW angle control
 class CarControllerParams:

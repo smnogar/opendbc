@@ -3,6 +3,7 @@ from opendbc.car import Bus, structs
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.carlog import carlog
+from opendbc.car.bmw.values import STEER_THRESHOLD
 
 class CarState(CarStateBase):
   def __init__(self, CP: structs.CarParams, CP_SP: structs.CarParamsSP):
@@ -112,6 +113,7 @@ class CarState(CarStateBase):
 
     # Driver steering torque (native units from CAN)
     ret.steeringTorque = cp.vl["steer_torque"]["driver_steer_torque"]
+    ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
 
     # Blinkers
     ret.leftBlinker = cp_kcan.vl["TurnSignals"]["LeftTurn"] != 0
