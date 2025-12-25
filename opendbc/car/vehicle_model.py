@@ -41,15 +41,19 @@ class VehicleModel:
     # scale the steering ratio based on steering angle. Assume steering ratio
     # is lower at higher angles for BMW sport steering
 
-    # steering wheel angle
+    # steering wheel angle scaling
     self.STEER_RATIO_LUT_ANGLE_DEG = np.array([
       0., 1., 5., 10.,
     ])
     self.STEER_RATIO_LUT_ANGLE_RAD = self.STEER_RATIO_LUT_ANGLE_DEG * np.pi / 180.0
 
-    self.STEER_RATIO_SCALE = np.array([
-      1., 0.95, 0.85, 0.8,
+    self.STEER_RATIO_ANGLE_SCALE = np.array([
+      1., 0.95, 0.80, 0.8,
     ])
+
+    # velocity scaling. Less sensitive steering at higher speeds
+    self.STEER_RATIO_U_BP = [20., 31.]
+    self.STEER_RATIO_U_SCALE = [1., 0.85]
 
 
   def update_params(self, stiffness_factor: float, steer_ratio: float) -> None:
@@ -59,19 +63,26 @@ class VehicleModel:
     self.sR: float = steer_ratio
 
 
-  def steer_ratio(self, sa: float) -> float:
+  def steer_ratio(self, sa: float, u: float) -> float:
 
     # Args:
     #   sa: Steering wheel angle [rad]
     # Returns:
     #   steer ratio
 
-    scale = float(np.interp(
+    str_scale = float(np.interp(
       abs(sa),
       self.STEER_RATIO_LUT_ANGLE_RAD,
-      self.STEER_RATIO_SCALE
+      self.STEER_RATIO_ANGLE_SCALE
     ))
-    return scale * self.sR
+
+    u_scale = float(np.interp(
+      u,
+      self.STEER_RATIO_U_BP,
+      self.STEER_RATIO_U_SCALE
+    ))
+
+    return str_scale * u_scale * self.sR
 
   def steady_state_sol(self, sa: float, u: float, roll: float) -> np.ndarray:
     """Returns the steady state solution.
@@ -103,7 +114,7 @@ class VehicleModel:
     Returns:
       Curvature factor [1/m]
     """
-    return (self.curvature_factor(u) * sa / self.steer_ratio(sa)) + self.roll_compensation(roll, u)
+    return (self.curvature_factor(u) * sa / self.steer_ratio(sa, u)) + self.roll_compensation(roll, u)
 
   def curvature_factor(self, u: float) -> float:
     """Returns the curvature factor.
@@ -138,7 +149,7 @@ class VehicleModel:
     sa = target * self.sR / max(k, 1e-3)
 
     for _ in range(5):
-      sa = target * self.steer_ratio(sa) / max(k, 1e-3)
+      sa = target * self.steer_ratio(sa, u) / max(k, 1e-3)
 
     return sa
 
