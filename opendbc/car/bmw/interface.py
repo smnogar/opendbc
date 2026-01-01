@@ -24,7 +24,7 @@ class CarInterface(CarInterfaceBase):
     ret.openpilotLongitudinalControl = False
     ret.pcmCruise = True
 
-    ret.steerActuatorDelay = 0.1
+    ret.steerActuatorDelay = 0.27
     ret.steerLimitTimer = 0.8
 
     # system is capable of steering at standstill, but disabled due to

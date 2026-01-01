@@ -43,17 +43,17 @@ class VehicleModel:
 
     # steering wheel angle scaling
     self.STEER_RATIO_LUT_ANGLE_DEG = np.array([
-      0., 1., 5., 10.,
+      -10., -5., -1., 0., 1., 5., 10.,
     ])
     self.STEER_RATIO_LUT_ANGLE_RAD = self.STEER_RATIO_LUT_ANGLE_DEG * np.pi / 180.0
 
     self.STEER_RATIO_ANGLE_SCALE = np.array([
-      1., 0.95, 0.80, 0.8,
+      0.78, 0.78, 0.95, 1., 0.97, 0.80, 0.80,
     ])
 
     # velocity scaling. Less sensitive steering at higher speeds
     self.STEER_RATIO_U_BP = [20., 31.]
-    self.STEER_RATIO_U_SCALE = [1., 0.85]
+    self.STEER_RATIO_U_SCALE = [1., 0.60]
 
 
   def update_params(self, stiffness_factor: float, steer_ratio: float) -> None:
