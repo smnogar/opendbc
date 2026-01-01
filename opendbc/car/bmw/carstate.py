@@ -6,11 +6,11 @@ from opendbc.car.carlog import carlog
 from opendbc.car.bmw.values import STEER_THRESHOLD
 
 class CarState(CarStateBase):
-  def __init__(self, CP: structs.CarParams, CP_SP: structs.CarParamsSP):
-    super().__init__(CP, CP_SP)
+  def __init__(self, CP: structs.CarParams):
+    super().__init__(CP)
 
   @staticmethod
-  def get_can_parsers(CP, CP_SP):
+  def get_can_parsers(CP):
 
     # ---------- MAIN FLEXRAY GATEWAY (bus 5) ----------
     main_msgs = [
@@ -60,13 +60,12 @@ class CarState(CarStateBase):
       Bus.chassis: cp_kcan,
     }
 
-  def update(self, can_parsers) -> tuple[structs.CarState, structs.CarStateSP]:
+  def update(self, can_parsers) -> tuple[structs.CarState]:
     cp = can_parsers[Bus.main]
     cp_sas = can_parsers[Bus.adas]
     cp_kcan = can_parsers[Bus.chassis]
 
     ret = structs.CarState()
-    ret_sp = structs.CarStateSP()
 
     # Previous state snapshot (avoids extra allocations and getattr fallback)
     prev = self.out
@@ -119,6 +118,6 @@ class CarState(CarStateBase):
     ret.leftBlinker = cp_kcan.vl["TurnSignals"]["LeftTurn"] != 0
     ret.rightBlinker = cp_kcan.vl["TurnSignals"]["RightTurn"] != 0
 
-    return ret, ret_sp
+    return ret
 
 

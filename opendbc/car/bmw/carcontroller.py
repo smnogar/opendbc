@@ -9,8 +9,8 @@ from opendbc.car.bmw.values import CarControllerParams
 
 
 class CarController(CarControllerBase):
-  def __init__(self, dbc_names, CP, CP_SP):
-    super().__init__(dbc_names, CP, CP_SP)
+  def __init__(self, dbc_names, CP):
+    super().__init__(dbc_names, CP)
     # External panda is index 1 -> buses 4-7; use bus 4 for TX
     self.packer = CANPacker(dbc_names[Bus.main])
     self.cnt = 0
@@ -33,7 +33,7 @@ class CarController(CarControllerBase):
     # TODO: implement real CRC. Placeholder returns 0.
     return 0
 
-  def update(self, CC, CC_SP, CS, now_nanos):
+  def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
     can_sends = []
 
