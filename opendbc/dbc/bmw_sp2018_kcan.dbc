@@ -12,8 +12,9 @@ BO_ 165 NEW_MSG_A5: 8 XXX
  SG_ NEW_SIGNAL_1 : 16|12@1+ (1,0) [0|4095] "" XXX
  SG_ NEW_SIGNAL_2 : 60|1@0+ (1,0) [0|1] "" XXX
 
-BO_ 173 NEW_MSG_AD: 8 XXX
- SG_ NEW_SIGNAL_1 : 24|12@1+ (1,0) [0|65535] "" XXX
+BO_ 173 dsc_steering: 8 XXX
+ SG_ maybe_steer_raw : 8|16@1+ (0.05,-1250) [0|4095] "" XXX
+ SG_ NEW_SIGNAL_1 : 24|12@1+ (-0.1,210) [0|65535] "" XXX
 
 BO_ 216 NEW_MSG_D8: 9 XXX
 
@@ -81,7 +82,7 @@ BO_ 769 NEW_MSG_301: 7 XXX
  SG_ NEW_SIGNAL_1 : 31|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 770 steering_wheel: 7 XXX
- SG_ steering_wheel_angle_deg : 16|16@1+ (0.042,-1376.256) [0|65535] "" XXX
+ SG_ steering_wheel_angle_deg_smooth : 16|16@1+ (0.04375,-1433.6) [0|65535] "" XXX
 
 BO_ 820 NEW_MSG_334: 8 XXX
  SG_ NEW_SIGNAL_1 : 0|12@1+ (1,0) [0|4095] "" XXX

@@ -11,6 +11,7 @@ class BMWCarSpecs(CarSpecs):
   wheelbase: float
   steerRatio: float
   centerToFrontRatio: float
+  tireStiffnessFactor: float
 
 
 @dataclass
@@ -31,6 +32,7 @@ class CAR(Platforms):
       wheelbase=3.105,
       steerRatio=16.3,
       centerToFrontRatio=0.5,
+      tireStiffnessFactor=1.0,
     ),
   )
 
@@ -38,10 +40,11 @@ class CAR(Platforms):
   BMW_G26_I4 = BMWSP2018PlatformConfig(
     [BMWCarDocs(name="BMW i4 (G26)")],
     BMWCarSpecs(
-      mass=2150.,
-      wheelbase=2.865,
-      steerRatio=15.5,
-      centerToFrontRatio=0.5,
+      mass=2125.,
+      wheelbase=2.856,
+      steerRatio=15.8,
+      centerToFrontRatio=0.54,
+      tireStiffnessFactor=1.25,
     ),
   )
 
@@ -74,4 +77,4 @@ class CarControllerParams:
   # reduce steering torque on highway for easier driver intervention. Not sure
   # how much of a difference this actually makes.
   WEAKEN_FORCE_BP = [22., 31.]
-  WEAKEN_FORCE_V  = [210, 250]
+  WEAKEN_FORCE_V  = [250, 250]

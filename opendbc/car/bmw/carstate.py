@@ -17,7 +17,7 @@ class CarState(CarStateBase):
         ("vehicle_speed",   200),   # flexray → CAN gateway, ~200 Hz
         ("EPS_Angle",       200),
         ("NEW_MSG_38",      200),
-        ("steer_torque",    200),
+        ("steering",        200),
     ]
 
     cp_main = CANParser("bmw_sp2018_flexray", main_msgs, bus=5)
@@ -81,9 +81,17 @@ class CarState(CarStateBase):
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.vEgoCluster = ret.vEgoRaw
 
-    # steering is in both flexray (100 hz) and kcan (50 hz).
-    # ret.steeringAngleDeg = cp_kcan.vl["steering_wheel"]["steering_wheel_angle_deg"]
-    ret.steeringAngleDeg = cp.vl["EPS_Angle"]["steering_angle"]
+    # smoothed steering wheel angle/fused vehicle dynamics angle
+    # steering_wheel_angle = cp.vl["NEW_MSG_38"]["maybe_steering_wheel_angle_smooth"]
+    steering_wheel_angle = cp_kcan.vl["dsc_steering"]["maybe_steer_raw"]
+
+    # smooth eps angle
+    eps_angle = cp.vl["EPS_Angle"]["eps_angle_smooth"]
+
+    ret.steeringAngleDeg = steering_wheel_angle
+    ret.steeringAngleOffsetDeg = eps_angle - steering_wheel_angle
+
+    ret.steeringRateDeg = cp.vl["EPS_Angle"]["maybe_eps_rate"]
 
     ret.standstill = ret.vEgoRaw < 0.01
 
@@ -108,10 +116,10 @@ class CarState(CarStateBase):
 
     # not validated yet
     # Yaw rate (deg/s -> rad/s), demux cycle base 0
-    # ret.yawRate = cp.vl["NEW_MSG_38"]["yaw"] * CV.DEG_TO_RAD
+    ret.yawRate = cp.vl["NEW_MSG_38"]["yaw"] * CV.DEG_TO_RAD
 
     # Driver steering torque (native units from CAN)
-    ret.steeringTorque = cp.vl["steer_torque"]["driver_steer_torque"]
+    ret.steeringTorque = cp.vl["steering"]["driver_steer_torque"]
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
 
     # Blinkers

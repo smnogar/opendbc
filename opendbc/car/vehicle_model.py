@@ -40,20 +40,45 @@ class VehicleModel:
 
     # scale the steering ratio based on steering angle. Assume steering ratio
     # is lower at higher angles for BMW sport steering
-
-    # steering wheel angle scaling
     self.STEER_RATIO_LUT_ANGLE_DEG = np.array([
-      -10., -5., -1., 0., 1., 5., 10.,
+      0.00,
+      1.00,
+      5.00,
+      10.00,
+      30.00,
+      60.00,
+      90.00,
+      180.00,
     ])
     self.STEER_RATIO_LUT_ANGLE_RAD = self.STEER_RATIO_LUT_ANGLE_DEG * np.pi / 180.0
 
+    # attempt to manually calibrate
     self.STEER_RATIO_ANGLE_SCALE = np.array([
-      0.78, 0.78, 0.95, 1., 0.97, 0.80, 0.80,
+      1.000,
+      0.998,
+      0.990,
+      0.982,
+      0.963,
+      0.945,
+      0.931,
+      0.896,
     ])
+
+    # 02 FEB 2026 trying to make the curve slightly steeper
+    # self.STEER_RATIO_ANGLE_SCALE = np.array([
+    #   1.000,
+    #   0.998,
+    #   0.985,
+    #   0.976,
+    #   0.953,
+    #   0.930,
+    #   0.913,
+    #   0.879,
+    # ])
 
     # velocity scaling. Less sensitive steering at higher speeds
     self.STEER_RATIO_U_BP = [20., 31.]
-    self.STEER_RATIO_U_SCALE = [1., 0.60]
+    self.STEER_RATIO_U_SCALE = [1., 0.85]
 
 
   def update_params(self, stiffness_factor: float, steer_ratio: float) -> None:
@@ -70,7 +95,7 @@ class VehicleModel:
     # Returns:
     #   steer ratio
 
-    str_scale = float(np.interp(
+    str_ratio = float(np.interp(
       abs(sa),
       self.STEER_RATIO_LUT_ANGLE_RAD,
       self.STEER_RATIO_ANGLE_SCALE
@@ -82,7 +107,7 @@ class VehicleModel:
       self.STEER_RATIO_U_SCALE
     ))
 
-    return str_scale * u_scale * self.sR
+    return str_ratio * u_scale * self.sR
 
   def steady_state_sol(self, sa: float, u: float, roll: float) -> np.ndarray:
     """Returns the steady state solution.
