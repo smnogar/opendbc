@@ -50,6 +50,7 @@ class CarState(CarStateBase):
         ("gear",           2),
         ("maybe_radar",    6),
         ("NEW_MSG_3F9",    3),
+        ("blind_spot",     3),
     ]
 
     cp_kcan = CANParser("bmw_sp2018_kcan", kcan_msgs, bus=0)
@@ -125,6 +126,10 @@ class CarState(CarStateBase):
     # Blinkers
     ret.leftBlinker = cp_kcan.vl["TurnSignals"]["LeftTurn"] != 0
     ret.rightBlinker = cp_kcan.vl["TurnSignals"]["RightTurn"] != 0
+
+    # blindspot
+    ret.leftBlindspot  = cp_kcan.vl["blind_spot"]["left_blind_spot"] != 0
+    ret.rightBlindspot = cp_kcan.vl["blind_spot"]["right_blind_spot"] != 0
 
     return ret
 

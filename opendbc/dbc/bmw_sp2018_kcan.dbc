@@ -68,6 +68,11 @@ BO_ 502 TurnSignals: 8 2
  SG_ TurnSignalActive : 8|1@0+ (1,0) [0|1] "" XXX
  SG_ TurnSignalIdle : 9|1@0+ (1,0) [0|1] "" XXX
 
+BO_ 508 blind_spot: 8 XXX
+ SG_ blind_spot_valid : 4|1@0+ (1,0) [0|1] "" XXX
+ SG_ left_blind_spot : 24|1@0+ (1,0) [0|1] "" XXX
+ SG_ right_blind_spot : 28|1@0+ (1,0) [0|1] "" XXX
+
 BO_ 614 NEW_MSG_266: 8 XXX
  SG_ NEW_SIGNAL_1 : 35|2@0+ (1,0) [0|3] "" XXX
 
