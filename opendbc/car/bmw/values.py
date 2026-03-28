@@ -1,3 +1,4 @@
+import numpy as np
 from dataclasses import dataclass, field
 from opendbc.car.docs_definitions import CarDocs
 
@@ -42,9 +43,9 @@ class CAR(Platforms):
     BMWCarSpecs(
       mass=2125.,
       wheelbase=2.856,
-      steerRatio=15.8,
+      steerRatio=15.0,
       centerToFrontRatio=0.54,
-      tireStiffnessFactor=1.25,
+      tireStiffnessFactor=1.35,
     ),
   )
 
@@ -57,18 +58,23 @@ STEER_THRESHOLD = 1.0
 # Lateral limits and controller parameters for BMW angle control
 class CarControllerParams:
   ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
-    # Assume EPAS faults above this angle; tune with testing
-    360,  # deg
-    # BMW uses vehicle-model limiting; rate tables unused here
-    ([], []),
-    ([], []),
+    # Absolute ceiling; 200 deg is plenty for standard OP driving
+    200,  # deg
+    
+    # UP: Steering INTO a curve (slightly smoothed to prevent jerk faults)
+    # 2.5 deg/frame @ 10ms = 250 deg/sec
+    ([0., 5., 25.], [2.5, 1.5, 0.3]),
+    
+    # DOWN: Returning to CENTER (allowed to move faster)
+    ([0., 5., 25.], [3.5, 2.5, 0.5]),
 
-    # Vehicle model-based limits (start conservative; adjust after road test)
-    MAX_LATERAL_ACCEL=ISO_LATERAL_ACCEL + (ACCELERATION_DUE_TO_GRAVITY * 0.04),  # ~3.4-3.5 m/s^2
-    MAX_LATERAL_JERK=3.0 + (ACCELERATION_DUE_TO_GRAVITY * 0.04),                 # ~3.4-3.5 m/s^3
+    # Vehicle model-based limits (accounting for ~6% road bank)
+    MAX_LATERAL_ACCEL=ISO_LATERAL_ACCEL + (ACCELERATION_DUE_TO_GRAVITY * 0.06),  
+    MAX_LATERAL_JERK=3.0 + (ACCELERATION_DUE_TO_GRAVITY * 0.06),                 
 
-    # prevent EPS faults and improve low-speed comfort
-    MAX_ANGLE_RATE=5,  # deg/20ms frame
+    # MAX_ANGLE_RATE is usually redundant if passing the UP/DOWN arrays above.
+    # If your specific OP fork requires it, set it to match your 0 mph UP limit.
+    MAX_ANGLE_RATE=2.5,  
   )
 
   # Angle command is sent every other frame (~50 Hz when DT_CTRL=100 Hz)
@@ -78,3 +84,19 @@ class CarControllerParams:
   # how much of a difference this actually makes.
   WEAKEN_FORCE_BP = [22., 31.]
   WEAKEN_FORCE_V  = [250, 250]
+
+  # --- Variable Sport Steering (VSS) Calibration ---
+  VSS_ANGLE_DEG = np.array([0.00, 1.00, 5.00, 10.00, 30.00, 60.00, 90.00, 180.00])
+  VSS_ANGLE_RAD = VSS_ANGLE_DEG * np.pi / 180.0
+  
+  # The TRUE physical steering ratios at the respective angles above
+  VSS_RATIO = np.array([
+    14.100,  # Center
+    14.072, 
+    13.959, 
+    13.846, 
+    13.578, 
+    13.325, 
+    13.127, 
+    12.634   # Off-center / Full Lock
+  ])

@@ -16,6 +16,8 @@ class CarController(CarControllerBase):
     self.cnt = 0
     self.cycle = 0
     self.apply_angle_last = 0.0
+    self.frame = 0  # Initialize frame counter if not inherited
+    
     # Vehicle model for angle limiting (use BMW CP)
     self.VM = VehicleModel(CP)
     self.params = CarControllerParams()
@@ -42,15 +44,21 @@ class CarController(CarControllerBase):
       return actuators, []
 
     lat_active = bool(CC.latActive)
-    desired_angle = float(actuators.steeringAngleDeg)
+    desired_wheel_angle = float(actuators.steeringAngleDeg)
 
-    # Vehicle model-based angle limiting (jerk/accel and EPS constraints)
-    desired_angle = apply_steer_angle_limits_vm(desired_angle, self.apply_angle_last, CS.out.vEgoRaw, CS.out.steeringAngleDeg,
-                                                lat_active, CarControllerParams, self.VM)
-    self.apply_angle_last = desired_angle
+    desired_wheel_angle = apply_steer_angle_limits_vm(
+        desired_wheel_angle, 
+        self.apply_angle_last, 
+        CS.out.vEgoRaw, 
+        CS.out.steeringAngleDeg,
+        lat_active, 
+        CarControllerParams, 
+        self.VM
+    )
+    self.apply_angle_last = desired_wheel_angle
 
     if self.frame % 2 == 0:
-
+      
       # weaken force mimics BMW stock behavior. I think this is about making
       # it easier for the driver to contribute to steering
       force_weaken_red = np.interp(CS.out.vEgo, self.params.WEAKEN_FORCE_BP, self.params.WEAKEN_FORCE_V)
@@ -62,10 +70,10 @@ class CarController(CarControllerBase):
         "crc1": 0,
         "cnt1": 0,
         "always_0x9": 9,
-        "steering_angle_req": desired_angle,
+        "steering_angle_req": desired_wheel_angle,
         "steer_torque_req": 0.0,
         "TJA_ready": 0,
-        "assist_mode": 0,   # it is set to 1 when stock LKAS active, 0 otherwise
+        "assist_mode": 1 if lat_active else 0,
         "wayback_en1_lane_keeping_trigger": 0,
         "lane_keeping_triggered": 1,
         "like_assist_torque_reserve": 0xA0 if lat_active else 0x00,
@@ -87,7 +95,6 @@ class CarController(CarControllerBase):
 
     self.frame += 1
     new_actuators = actuators.as_builder()
-    new_actuators.steeringAngleDeg = desired_angle
+    
+    new_actuators.steeringAngleDeg = desired_wheel_angle    
     return new_actuators, can_sends
-
-

@@ -38,47 +38,15 @@ class VehicleModel:
     self.cR_orig: float = CP.tireStiffnessRear
     self.update_params(1.0, CP.steerRatio)
 
-    # scale the steering ratio based on steering angle. Assume steering ratio
-    # is lower at higher angles for BMW sport steering
-    self.STEER_RATIO_LUT_ANGLE_DEG = np.array([
-      0.00,
-      1.00,
-      5.00,
-      10.00,
-      30.00,
-      60.00,
-      90.00,
-      180.00,
-    ])
-    self.STEER_RATIO_LUT_ANGLE_RAD = self.STEER_RATIO_LUT_ANGLE_DEG * np.pi / 180.0
-
-    # attempt to manually calibrate
-    self.STEER_RATIO_ANGLE_SCALE = np.array([
-      1.000,
-      0.998,
-      0.990,
-      0.982,
-      0.963,
-      0.945,
-      0.931,
-      0.896,
-    ])
-
-    # 02 FEB 2026 trying to make the curve slightly steeper
-    # self.STEER_RATIO_ANGLE_SCALE = np.array([
-    #   1.000,
-    #   0.998,
-    #   0.985,
-    #   0.976,
-    #   0.953,
-    #   0.930,
-    #   0.913,
-    #   0.879,
-    # ])
-
-    # velocity scaling. Less sensitive steering at higher speeds
-    self.STEER_RATIO_U_BP = [20., 31.]
-    self.STEER_RATIO_U_SCALE = [1., 0.85]
+    # Safely load the actual BMW VSS Ratios
+    try:
+      from opendbc.car.bmw.values import CarControllerParams
+      self.lut_angle_rad = CarControllerParams.VSS_ANGLE_RAD
+      self.lut_ratio = CarControllerParams.VSS_RATIO
+    except ImportError:
+      # Fallback for linear steering racks
+      self.lut_angle_rad = np.array([0.0, 180.0])
+      self.lut_ratio = np.array([self.sR_orig, self.sR_orig])
 
 
   def update_params(self, stiffness_factor: float, steer_ratio: float) -> None:
@@ -89,25 +57,14 @@ class VehicleModel:
 
 
   def steer_ratio(self, sa: float, u: float) -> float:
-
-    # Args:
-    #   sa: Steering wheel angle [rad]
-    # Returns:
-    #   steer ratio
-
-    str_ratio = float(np.interp(
+    # Get the exact physical ratio for this angle
+    actual_ratio = float(np.interp(
       abs(sa),
-      self.STEER_RATIO_LUT_ANGLE_RAD,
-      self.STEER_RATIO_ANGLE_SCALE
+      self.lut_angle_rad,
+      self.lut_ratio
     ))
 
-    u_scale = float(np.interp(
-      u,
-      self.STEER_RATIO_U_BP,
-      self.STEER_RATIO_U_SCALE
-    ))
-
-    return str_ratio * u_scale * self.sR
+    return actual_ratio
 
   def steady_state_sol(self, sa: float, u: float, roll: float) -> np.ndarray:
     """Returns the steady state solution.

@@ -25,7 +25,7 @@ class CarInterface(CarInterfaceBase):
     ret.pcmCruise = True
 
     ret.steerActuatorDelay = 0.27
-    ret.steerLimitTimer = 0.8
+    ret.steerLimitTimer = 1.5
 
     # system is capable of steering at standstill, but disabled due to
     # unnecessary movements close to and at standstill
