@@ -8,16 +8,18 @@ from opendbc.car.bmw.values import STEER_THRESHOLD
 class CarState(CarStateBase):
   def __init__(self, CP: structs.CarParams):
     super().__init__(CP)
+    self.enabled_frame_count = 0
 
   @staticmethod
   def get_can_parsers(CP):
 
     # ---------- MAIN FLEXRAY GATEWAY (bus 5) ----------
     main_msgs = [
-        ("vehicle_speed",   200),   # flexray → CAN gateway, ~200 Hz
-        ("EPS_Angle",       200),
-        ("NEW_MSG_38",      200),
-        ("steering",        200),
+        ("vehicle_speed",           200),   # flexray → CAN gateway, ~200 Hz
+        ("EPS_Angle",               200),
+        ("NEW_MSG_38",              200),
+        ("steering",                200),
+        ("target_steering_torque",  200),
     ]
 
     cp_main = CANParser("bmw_sp2018_flexray", main_msgs, bus=5)
@@ -108,12 +110,24 @@ class CarState(CarStateBase):
       # Unknown mapping, keep previous
       ret.gearShifter = prev.gearShifter
 
-    # use radar message which is 1 regardless if pedal is pushed
-    long_active = bool(int(cp_kcan.vl["maybe_radar"]["long_active"]))
-
-    ret.cruiseState.enabled = long_active
-
     ret.cruiseState.available = True
+    ret.cruiseState.enabled = bool(cp_sas.vl["ACC"]["ACC_ENGAGED"])
+    if ret.cruiseState.enabled:
+      self.enabled_frame_count += 1
+    else:
+      self.enabled_frame_count = 0      
+
+    # conditions
+    # 1. EPS reports its in a nominal state.
+    # 2. driver_has_steering_authority means that the system has handed control to the driver. 
+    #    In practice this happens before eps_nominal goes to false.
+    # 3. adaptive cruise control has been engaged for more than 1 second
+    # 4. Vehicle is moving more than 2 m/s
+    enable_fault_check = ret.vEgoRaw > 2.
+    lkas_enabled = self.enabled_frame_count > 100
+    driver_has_steering_authority = int(cp.vl["target_steering_torque"]["driver_steering_active"]) > 200
+    # steering_inhibited = not eps_nominal and driver_has_steering_authority
+    ret.steerFaultTemporary = enable_fault_check and lkas_enabled and driver_has_steering_authority
 
     # not validated yet
     # Yaw rate (deg/s -> rad/s), demux cycle base 0

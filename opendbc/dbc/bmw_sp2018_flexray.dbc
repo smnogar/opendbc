@@ -52,6 +52,7 @@ BO_ 49 steering: 17 XXX
 BO_ 51 EPS_Angle: 17 XXX
  SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
  SG_ eps_angle_smooth m0 : 24|15@1- (0.05512,-1.5) [0|65535] "" XXX
+ SG_ eps_fault m0 : 69|1@0+ (1,0) [0|1] "" XXX
  SG_ maybe_eps_rate m0 : 88|12@1+ (0.1,-100) [0|4095] "" XXX
 
 BO_ 53 NEW_MSG_35: 17 XXX
@@ -82,17 +83,22 @@ BO_ 63 seems_all_counters: 17 XXX
 
 BO_ 68 target_steering_torque: 17 XXX
  SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
+ SG_ driver_steering_active m0 : 47|8@0+ (1,0) [0|255] "" XXX
+ SG_ eps_errors m0 : 55|8@0+ (-1,254) [0|255] "" XXX
+ SG_ eps_state m0 : 71|8@0+ (1,0) [0|255] "" XXX
  SG_ target_steering_torque m0 : 88|12@1+ (0.005,-10) [0|4095] "" XXX
 
 BO_ 71 NEW_MSG_47: 17 XXX
 
 BO_ 72 ACC: 17 SAS
  SG_ cycle_count M : 1|2@0+ (1,0) [0|63] "" XXX
+ SG_ ACC_ENGAGED m0 : 42|1@0+ (1,0) [0|15] "" XXX
+ SG_ ACC_ENABLED m0 : 51|1@0+ (1,0) [0|255] "" XXX
  SG_ crc1 m1 : 8|8@1+ (1,0) [0|255] "" XXX
  SG_ cnt1 m1 : 16|4@1+ (1,0) [0|255] "" XXX
  SG_ always_0x9 m1 : 20|4@1+ (1,0) [0|15] "" XXX
- SG_ steering_angle_req m1 : 24|16@1+ (0.05,-1250.0) [0|31] "" XXX
- SG_ steer_torque_req m1 : 40|16@1+ (0.006,-196.596) [0|255] "" XXX
+ SG_ steering_angle_req m1 : 24|16@1+ (0.051,-1275.0) [0|31] "" XXX
+ SG_ maybe_steer_req_rate m1 : 40|16@1+ (0.238125,-7802.40375) [0|255] "" XXX
  SG_ TJA_ready m1 : 56|8@1+ (1,0) [0|255] "" XXX
  SG_ assist_mode m1 : 64|2@1+ (1,0) [0|1] "" XXX
  SG_ wayback_en1_lane_keeping_trigger m1 : 71|6@0+ (1,0) [0|1] "" XXX

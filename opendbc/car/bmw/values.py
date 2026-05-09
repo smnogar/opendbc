@@ -45,7 +45,7 @@ class CAR(Platforms):
       wheelbase=2.856,
       steerRatio=15.0,
       centerToFrontRatio=0.54,
-      tireStiffnessFactor=1.35,
+      tireStiffnessFactor=1.2,
     ),
   )
 
@@ -58,23 +58,23 @@ STEER_THRESHOLD = 1.0
 # Lateral limits and controller parameters for BMW angle control
 class CarControllerParams:
   ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
-    # Absolute ceiling; 200 deg is plenty for standard OP driving
-    200,  # deg
+    360,  # deg
     
-    # UP: Steering INTO a curve (slightly smoothed to prevent jerk faults)
-    # 2.5 deg/frame @ 10ms = 250 deg/sec
-    ([0., 5., 25.], [2.5, 1.5, 0.3]),
+    # # UP: Steering INTO a curve (slightly smoothed to prevent jerk faults)
+    # # 2.5 deg/frame @ 10ms = 250 deg/sec
+    # ([0., 5., 25.], [2.5, 1.5, 0.3]),
     
-    # DOWN: Returning to CENTER (allowed to move faster)
-    ([0., 5., 25.], [3.5, 2.5, 0.5]),
+    # # DOWN: Returning to CENTER (allowed to move faster)
+    # ([0., 5., 25.], [3.5, 2.5, 0.5]),
+
+    ([], []),
+    ([], []),
 
     # Vehicle model-based limits (accounting for ~6% road bank)
     MAX_LATERAL_ACCEL=ISO_LATERAL_ACCEL + (ACCELERATION_DUE_TO_GRAVITY * 0.06),  
     MAX_LATERAL_JERK=3.0 + (ACCELERATION_DUE_TO_GRAVITY * 0.06),                 
 
-    # MAX_ANGLE_RATE is usually redundant if passing the UP/DOWN arrays above.
-    # If your specific OP fork requires it, set it to match your 0 mph UP limit.
-    MAX_ANGLE_RATE=2.5,  
+    MAX_ANGLE_RATE=5,  
   )
 
   # Angle command is sent every other frame (~50 Hz when DT_CTRL=100 Hz)
@@ -83,20 +83,46 @@ class CarControllerParams:
   # reduce steering torque on highway for easier driver intervention. Not sure
   # how much of a difference this actually makes.
   WEAKEN_FORCE_BP = [22., 31.]
-  WEAKEN_FORCE_V  = [250, 250]
+  WEAKEN_FORCE_V  = [250, 218]
 
   # --- Variable Sport Steering (VSS) Calibration ---
-  VSS_ANGLE_DEG = np.array([0.00, 1.00, 5.00, 10.00, 30.00, 60.00, 90.00, 180.00])
+  VSS_ANGLE_DEG = np.array([0.0, 1.0, 5.0, 10.0, 30.0, 60.0, 90.0, 180.0, 360.0])
   VSS_ANGLE_RAD = VSS_ANGLE_DEG * np.pi / 180.0
   
-  # The TRUE physical steering ratios at the respective angles above
+  # slower response (hand crafted)
   VSS_RATIO = np.array([
-    14.100,  # Center
-    14.072, 
-    13.959, 
-    13.846, 
-    13.578, 
-    13.325, 
-    13.127, 
-    12.634   # Off-center / Full Lock
+    14.100,
+    14.091,
+    14.073,
+    14.050,
+    13.978,
+    13.840,
+    13.641,
+    13.160,
+    12.292,
   ])
+
+  # actually measured
+  # VSS_RATIO = np.array([
+  #   15.464,  # Center
+  #   15.45451, 
+  #   15.41675, 
+  #   15.37, 
+  #   15.188, 
+  #   14.93, 
+  #   14.69, 
+  #   14.07,
+  #   13.34,
+  # ])
+
+  # VSS_RATIO = np.array([
+  #   15.499,
+  #   15.495,
+  #   15.483,
+  #   15.465,
+  #   15.389,
+  #   15.189,
+  #   14.965,
+  #   14.211,
+  #   12.5,
+  # ])
