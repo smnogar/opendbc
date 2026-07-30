@@ -64,7 +64,10 @@ class VehicleModel:
       self.lut_ratio
     ))
 
-    return actual_ratio
+    # return actual_ratio
+
+    # use ratio and learned SR
+    return float(self.sR * actual_ratio / self.lut_ratio[0])
 
   def steady_state_sol(self, sa: float, u: float, roll: float) -> np.ndarray:
     """Returns the steady state solution.

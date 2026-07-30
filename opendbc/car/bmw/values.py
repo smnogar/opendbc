@@ -45,7 +45,7 @@ class CAR(Platforms):
       wheelbase=2.856,
       steerRatio=15.0,
       centerToFrontRatio=0.54,
-      tireStiffnessFactor=1.2,
+      tireStiffnessFactor=1.25,
     ),
   )
 
@@ -59,11 +59,11 @@ STEER_THRESHOLD = 1.0
 class CarControllerParams:
   ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
     360,  # deg
-    
+
     # # UP: Steering INTO a curve (slightly smoothed to prevent jerk faults)
     # # 2.5 deg/frame @ 10ms = 250 deg/sec
     # ([0., 5., 25.], [2.5, 1.5, 0.3]),
-    
+
     # # DOWN: Returning to CENTER (allowed to move faster)
     # ([0., 5., 25.], [3.5, 2.5, 0.5]),
 
@@ -71,10 +71,10 @@ class CarControllerParams:
     ([], []),
 
     # Vehicle model-based limits (accounting for ~6% road bank)
-    MAX_LATERAL_ACCEL=ISO_LATERAL_ACCEL + (ACCELERATION_DUE_TO_GRAVITY * 0.06),  
-    MAX_LATERAL_JERK=3.0 + (ACCELERATION_DUE_TO_GRAVITY * 0.06),                 
+    MAX_LATERAL_ACCEL=ISO_LATERAL_ACCEL + (ACCELERATION_DUE_TO_GRAVITY * 0.06),
+    MAX_LATERAL_JERK=3.0 + (ACCELERATION_DUE_TO_GRAVITY * 0.06),
 
-    MAX_ANGLE_RATE=5,  
+    MAX_ANGLE_RATE=5,
   )
 
   # Angle command is sent every other frame (~50 Hz when DT_CTRL=100 Hz)
@@ -83,12 +83,12 @@ class CarControllerParams:
   # reduce steering torque on highway for easier driver intervention. Not sure
   # how much of a difference this actually makes.
   WEAKEN_FORCE_BP = [22., 31.]
-  WEAKEN_FORCE_V  = [250, 218]
+  WEAKEN_FORCE_V  = [250, 250]
 
   # --- Variable Sport Steering (VSS) Calibration ---
   VSS_ANGLE_DEG = np.array([0.0, 1.0, 5.0, 10.0, 30.0, 60.0, 90.0, 180.0, 360.0])
   VSS_ANGLE_RAD = VSS_ANGLE_DEG * np.pi / 180.0
-  
+
   # slower response (hand crafted)
   VSS_RATIO = np.array([
     14.100,
@@ -105,12 +105,12 @@ class CarControllerParams:
   # actually measured
   # VSS_RATIO = np.array([
   #   15.464,  # Center
-  #   15.45451, 
-  #   15.41675, 
-  #   15.37, 
-  #   15.188, 
-  #   14.93, 
-  #   14.69, 
+  #   15.45451,
+  #   15.41675,
+  #   15.37,
+  #   15.188,
+  #   14.93,
+  #   14.69,
   #   14.07,
   #   13.34,
   # ])

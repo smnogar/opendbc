@@ -93,10 +93,12 @@ class CarController(CarControllerBase):
     ))
 
     # experimental: Account for variable steering ratio
-    # center_ratio = self.params.VSS_RATIO[0]
-    # current_pinion_scale = current_ratio / center_ratio
-    # eps_angle_req = desired_wheel_angle * current_pinion_scale
-    eps_angle_req = desired_wheel_angle
+    center_ratio = self.params.VSS_RATIO[0]
+    current_pinion_scale = current_ratio / center_ratio   # < 1
+    eps_angle_req = desired_wheel_angle * current_pinion_scale
+    # eps_angle_req = desired_wheel_angle
+
+    # RULE: eps_angle_req < desired_wheel_angle
 
     if self.frame % 2 == 0:
       force_weaken_red = np.interp(CS.out.vEgo, self.params.WEAKEN_FORCE_BP, self.params.WEAKEN_FORCE_V)
