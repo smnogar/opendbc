@@ -85,6 +85,23 @@ class CarControllerParams:
   WEAKEN_FORCE_BP = [22., 31.]
   WEAKEN_FORCE_V  = [250, 250]
 
+  # --- EPS speed-dependent over-gain compensation ---
+  # The EPS delivers more angle than we request, and the excess grows with speed.
+  # Measured in raw CAN counts (achieved wheel angle / requested angle) on sustained
+  # turns, so this sits downstream of all steerRatio/VSS math:
+  #   2026-07-24 drive:  1.03 @ 12 m/s, 1.08 @ 20, 1.23 @ 28, 1.27 @ 32
+  #   2026-07-29 drive:  1.16 @ 20 m/s, 1.21 @ 24, 1.28 @ 28, 1.32 @ 32
+  # Left uncompensated this is ~30% excess forward gain on the highway which, with
+  # ~0.45 s of actuator delay, erodes phase margin -> curve-entry overshoot (corner
+  # cutting) and a ~0.5 Hz limit cycle (ping-pong).
+  #
+  # Part of the measured gain is resonant overshoot rather than static gain, so this
+  # table deliberately under-corrects (targets ~1.08 residual instead of 1.0). Step it
+  # toward the measured values below once a drive confirms the highway is settled.
+  EPS_GAIN_BP = [12., 18., 24., 30.]
+  EPS_GAIN_V  = [1.00, 1.04, 1.14, 1.20]   # conservative
+  # measured (full cancellation): [1.00, 1.06, 1.21, 1.30]
+
   # --- Variable Sport Steering (VSS) Calibration ---
   VSS_ANGLE_DEG = np.array([0.0, 1.0, 5.0, 10.0, 30.0, 60.0, 90.0, 180.0, 360.0])
   VSS_ANGLE_RAD = VSS_ANGLE_DEG * np.pi / 180.0

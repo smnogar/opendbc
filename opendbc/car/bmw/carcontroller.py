@@ -2,7 +2,7 @@ import numpy as np
 
 from opendbc.can import CANPacker
 from opendbc.car.interfaces import CarControllerBase
-from opendbc.car import Bus
+from opendbc.car import Bus, DT_CTRL
 from opendbc.car.lateral import apply_steer_angle_limits_vm
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.car.bmw.values import CarControllerParams
@@ -47,23 +47,36 @@ class CarController(CarControllerBase):
     lat_desired = lat_active
     desired_wheel_angle = float(actuators.steeringAngleDeg)
 
-    desired_wheel_angle = apply_steer_angle_limits_vm(
-        desired_wheel_angle, 
-        self.apply_angle_last, 
-        CS.out.vEgoRaw, 
-        CS.out.steeringAngleDeg,
-        lat_active, 
-        CarControllerParams, 
-        self.VM
-    )
+    # Rate limiting runs at the transmit cadence, NOT every frame.
+    # get_max_angle_delta_vm() returns a delta budget for one STEER_STEP
+    # (it multiplies by DT_CTRL * STEER_STEP). Spending that budget on every
+    # 100 Hz frame while only transmitting every STEER_STEP frames allowed
+    # STEER_STEP times the intended lateral jerk, which let the commanded angle
+    # slew faster than the EPS could follow. The resulting tracking error made
+    # the EPS hand control back to the driver (driver_steering_active -> 254),
+    # which surfaces as a spurious "Steering Assist Temporarily Unavailable".
+    if self.frame % self.params.STEER_STEP == 0:
+      desired_wheel_angle = apply_steer_angle_limits_vm(
+          desired_wheel_angle,
+          self.apply_angle_last,
+          CS.out.vEgoRaw,
+          CS.out.steeringAngleDeg,
+          lat_active,
+          CarControllerParams,
+          self.VM
+      )
 
-    # scale by 0.8
-    angle_rate = (desired_wheel_angle - self.apply_angle_last) * 100. * 0.45
+      # delta now spans DT_CTRL * STEER_STEP, so convert to deg/s with that period
+      # to keep this feedforward at the same physical scale as before
+      angle_rate = (desired_wheel_angle - self.apply_angle_last) / (DT_CTRL * self.params.STEER_STEP) * 0.45
 
-    alpha = 0.5
-    self.filtered_rate = (alpha * angle_rate) + ((1.0 - alpha) * self.filtered_rate)
+      alpha = 0.5
+      self.filtered_rate = (alpha * angle_rate) + ((1.0 - alpha) * self.filtered_rate)
 
-    self.apply_angle_last = desired_wheel_angle
+      self.apply_angle_last = desired_wheel_angle
+    else:
+      # hold between transmits so carOutput reports what is actually commanded
+      desired_wheel_angle = self.apply_angle_last
 
     self.send_empty_frame = False
     if CC.enabled and not CC.latActive and CS.out.steerFaultTemporary:
@@ -99,6 +112,13 @@ class CarController(CarControllerBase):
     # eps_angle_req = desired_wheel_angle
 
     # RULE: eps_angle_req < desired_wheel_angle
+
+    # 3. CANCEL THE EPS SPEED-DEPENDENT OVER-GAIN
+    # The EPS applies more angle than requested, increasingly so with speed. openpilot's
+    # lateral loop assumes a unity-gain actuator, so divide the excess back out to keep
+    # the forward path at ~1.0. See EPS_GAIN_BP/V in values.py for the measurements.
+    eps_gain = float(np.interp(CS.out.vEgo, self.params.EPS_GAIN_BP, self.params.EPS_GAIN_V))
+    eps_angle_req /= eps_gain
 
     if self.frame % 2 == 0:
       force_weaken_red = np.interp(CS.out.vEgo, self.params.WEAKEN_FORCE_BP, self.params.WEAKEN_FORCE_V)
