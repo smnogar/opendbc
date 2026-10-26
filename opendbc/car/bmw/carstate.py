@@ -9,6 +9,9 @@ class CarState(CarStateBase):
   def __init__(self, CP: structs.CarParams):
     super().__init__(CP)
     self.enabled_frame_count = 0
+    # EPS-side signals used by the carcontroller trim loop and handback recovery
+    self.eps_angle = 0.
+    self.eps_state = 0
 
   @staticmethod
   def get_can_parsers(CP):
@@ -88,8 +91,10 @@ class CarState(CarStateBase):
     # steering_wheel_angle = cp.vl["NEW_MSG_38"]["maybe_steering_wheel_angle_smooth"]
     steering_wheel_angle = cp_kcan.vl["dsc_steering"]["maybe_steer_raw"]
 
-    # smooth eps angle
+    # EPS motor-side angle, in steering_angle_req units (not wheel degrees)
     eps_angle = cp.vl["EPS_Angle"]["eps_angle_smooth"]
+    self.eps_angle = eps_angle
+    self.eps_state = int(cp.vl["target_steering_torque"]["eps_state"])
 
     ret.steeringAngleDeg = steering_wheel_angle
     ret.steeringAngleOffsetDeg = eps_angle - steering_wheel_angle
